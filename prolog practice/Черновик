@@ -1,0 +1,307 @@
+CONSTANTS
+	min = -1e+308
+	max = 1e+308
+	
+DOMAINS
+	TOx1, TOy1, TOx2, TOy2, TOx3, TOy3, ROx1, ROy1,  ROx2, ROy2, ROx3, ROy3, ROx4, ROy4 = real
+
+PREDICATES
+	tasktext
+	intersection
+	solve(real, real, real, real, real, real, real, real, real, real, real, real, real, real)
+	straightline(real, real, real, real, real, real, real, real, real, real, real, real, real, real)
+	determinant(real, real, real, real)
+	intersectionline()
+	check(real, real, real, real, real, real, real, real, real, real)
+	checkreal(real)
+	checkrange(real)
+	
+CLAUSES
+	tasktext:-write("Enter the coordinates of the vertices of the triangle and rectangle to find the intersection."),nl,nl.
+	intersection:-
+	write("Enter vertices coordinates  of the triangle:"),
+	write("Enter TOx1: "),
+	checkreal(TOx1),checkrange(TOx1),
+	write("Enter TOy1: "),
+	checkreal(TOy1),checkrange(TOy1),
+	write("Enter TOx2: "),
+	checkreal(TOx2),checkrange(TOx2),
+	write("Enter TOy2: "),
+	checkreal(TOy2),checkrange(TOy2),
+	write("Enter TOx3: "),
+	checkreal(TOx3),checkrange(TOx3),
+	write("Enter TOy3: "),
+	checkreal(TOy3),checkrange(TOy3),
+	write("Enter vertices coordinates  of the rectangle:"),
+	write("Enter ROx1: "),
+	checkreal(ROx1),checkrange(ROx1),
+	write("Enter ROy1: "),
+	checkreal(ROy1),checkrange(ROy1),
+	write("Enter ROx2: "),
+	checkreal(ROx2),checkrange(ROx2),
+	write("Enter ROy2: "),
+	checkreal(ROy2),checkrange(ROy2),
+	write("Enter ROx3: "),
+	checkreal(ROx3),checkrange(ROx3),
+	write("Enter ROy3: "),
+	checkreal(ROy3),checkrange(ROy3),
+	write("Enter ROx4: "),
+	checkreal(ROx4),checkrange(ROx4),
+	write("Enter ROy4: "),
+	checkreal(ROy4),checkrange(ROy4),
+	solve(TOx1, TOy1, TOx2, TOy2, TOx3, TOy3, ROx1, ROy1,  ROx2, ROy2, ROx3, ROy3, ROx4, ROy4).
+	
+	checkreal(Variable):-readreal(Variable),!;
+	write("Input ErRor! Please, enter number: "),checkreal(Variable).
+	checkrange(Variable):-Variable>min,Variable<max,!;
+	write("Range ErRor! The number is not included in the range of valid values."),nl,write("Try again."),nl,Variable=0.
+	
+	solve(TOx1, TOy1, TOx2, TOy2, TOx3, TOy3, ROx1, ROy1,  ROx2, ROy2, ROx3, ROy3, ROx4, ROy4):-
+	straightline(TOx1, TOy1, TOx2, TOy2, TOx3, TOy3, ROx1, ROy1,  ROx2, ROy2, ROx3, ROy3, ROx4, ROy4),
+	
+	A=0,B=0,C=0,write("x is any number"),nl,nl,!;
+	A=0,B=0,write("no solutions"),nl,nl,!;
+	A=0,!,write("A=0 => X= "),X=-C/B,write(X),nl,nl.
+
+	% предикат для поиска пересечений отрезков фигур
+	straightline(TOx1, TOy1, TOx2, TOy2, TOx3, TOy3, ROx1, ROy1,  ROx2, ROy2, ROx3, ROy3, ROx4, ROy4):-
+	% поиск пересечения 1-го отрезка треугольника со всеми отрезками четырехугольника
+	determinant(TOx1, TOy1, TOx2, TOy2, ROx1, ROy1, ROx2, ROy2),
+	determinant(TOx1, TOy1, TOx2, TOy2, ROx2, ROy2, ROx3, ROy3),
+	determinant(TOx1, TOy1, TOx2, TOy2, ROx3, ROy3, ROx4, ROy4),
+	determinant(TOx1, TOy1, TOx2, TOy2, ROx4, ROy4, ROx1, ROy1),
+	% поиск пересечения 2-го отрезка треугольника со всеми отрезками четырехугольника
+	determinant(TOx2, TOy2, TOx3, TOy3, ROx1, ROy1, ROx2, ROy2),
+	determinant(TOx2, TOy2, TOx3, TOy3, ROx2, ROy2, ROx3, ROy3),
+	determinant(TOx2, TOy2, TOx3, TOy3, ROx3, ROy3, ROx4, ROy4),
+	determinant(TOx2, TOy2, TOx3, TOy3, ROx4, ROy4, ROx1, ROy1),
+	% поиск пересечения 3-го отрезка треугольника со всеми отрезками четырехугольника
+	determinant(TOx3, TOy3, TOx1, TOy1, ROx1, ROy1, ROx2, ROy2),
+	determinant(TOx3, TOy3, TOx1, TOy1, ROx2, ROy2, ROx3, ROy3),
+	determinant(TOx3, TOy3, TOx1, TOy1, ROx3, ROy3, ROx4, ROy4),
+	determinant(TOx3, TOy3, TOx1, TOy1, ROx4, ROy4, ROx1, ROy1), nl, nl.
+	
+	/* нахождение пересечения с помощью определителя, где:
+	 * первая прямая задана двумя точками (X1, Y1) и (X2, Y2), вторая -- (X3, Y3) и (X4, Y4);
+	 * при определении множества пересечения прямых (точка пересечения) проверяем, находится ли точка пересечения в области определения отрезков
+	 */
+	determinant(X1, Y1, X2, Y2, X3, Y3, X4, Y4):-
+	Denominator = (X1-X2)*(Y3-Y4)-(Y1-Y2)*(X3-X4), Denominator=0,!; % если знаменатель равен 0, прямые параллельны => пересечение -- пустое множество
+	(Y2-Y1)/(X2-X1)=(Y4-Y3)/(X4-X3), ((Y2-Y1)*(-X1))/(X2-X1)=((Y4-Y3)*(-X3))/(X4-X3),!, intersectionline();
+	Px = ((X1*Y2-Y1*X2)*(X3-X4)-(X1-X2)*(X3*Y4-Y3*X4))/Denominator,
+	Py = ((X1*Y2-Y1*X2)*(Y3-Y4)-(Y1-Y2)*(X3*Y4-Y3*X4))/Denominator,
+	check(Px, Py, X1, Y1, X2, Y2, X3, Y3, X4, Y4).
+	
+	check(X,Y):-
+	X1 < X2, 
+	
+	solve(A,B,C):-D=B*B-4*A*C,D<0,!,write("D<0 => no real Roots"),nl,solvecomplex(A,B,D).
+	solve(A,B,C):-D=B*B-4*A*C,D=0,!, write("D=0 => X1=X2= "),X=-B/(2*A),write(X).
+	solve(A,B,C):-D=B*B-4*A*C,X1=(-B+sqrt(D))/(2*A),X2=(-B-sqrt(D))/(2*A),write("D>0 => X1= "),
+	write(X1),write(" X2= "),write(X2).
+	
+GOAL
+	tasktext,
+	intersection
+	
+	
+	
+	
+	% предикат для поиска пересечений отрезков фигур
+	solve(TOx1, TOy1, TOx2, TOy2, TOx3, TOy3, ROx1, ROy1, ROx2, ROy2, ROx3, ROy3, ROx4, ROy4):-
+	TL1_k = (TOy2-TOy1)/(TOx2-TOx1), TL1_b = ((TOy2-TOy1)*(-TOx1))/(TOx2-TOx1),  % проверить знаменатель
+	TL2_k = (TOy3-TOy2)/(TOx3-TOx2), TL2_b = ((TOy3-TOy2)*(-TOx2))/(TOx3-TOx2),
+	TL3_k = (TOy1-TOy3)/(TOx1-TOx2), TL3_b = ((TOy1-TOy2)*(-TOx3))/(TOx1-TOx2),
+	RL1_k = (ROy2-ROy1)/(ROx2-ROx1), RL1_b = ((ROy2-ROy1)*(-ROy1))/(ROx2-ROx1),
+	RL2_k = (ROy3-ROy2)/(ROx3-ROx2), RL2_b = ((ROy3-ROy2)*(-ROy2))/(ROx3-ROx2),
+	RL3_k = (ROy4-ROy3)/(ROx4-ROx3), RL3_b = ((ROy4-ROy3)*(-ROy3))/(ROx4-ROx3),
+	RL4_k = (ROy1-ROy4)/(ROx1-ROx4), RL4_b = ((ROy1-ROy4)*(-ROy4))/(ROx1-ROx4),
+	determinant(TL1_k, TL1_b, RL1_k, RL1_b, TOx1, TOy1, TOx2, TOy2, ROx1, ROy1, ROx2, ROy2).
+	
+	determinant(K1, B1, K2, B2, TX1, TY1, TX2, TY2, RX1, RY1, RX2, RY2):-
+	K = K1-K2, B = B1-B2, K <> 0, !, X = (-B)/K,
+	Y = K1*X+B1, correctDeterm(X, Y, TX1, TY1, TX2, TY2, RX1, RY1, RX2, RY2).
+	
+	correctDeterm(X, Y, TX1, TY1, TX2, TY2, RX1, RY1, RX2, RY2):-
+	
+	%((X<=TX1&&X>=TX2)||(X>=TX1&&X<=TX2))&&((X<=RX1&&X>=RX2)||(X>=RX1&&X<=RX2)),
+	%((Y<=TY1&&Y>=TY2)||(Y>=TY1&&Y<=TY2))&&((Y<=RY1&&Y>=RY2)||(Y>=RY1&&Y<=RY2)), !,
+	write("  ( "),write(X),write("; "),write(Y),write(" ) "),nl.
+	
+	
+	%solve(A,B,C):-D=B*B-4*A*C,D<0,!,write("D<0 => no real Roots"),nl,solvecomplex(A,B,D).
+	%solve(A,B,C):-D=B*B-4*A*C,D=0,!, write("D=0 => X1=X2= "),X=-B/(2*A),write(X).
+	%solve(A,B,C):-D=B*B-4*A*C,X1=(-B+sqrt(D))/(2*A),X2=(-B-sqrt(D))/(2*A),write("D>0 => X1= "),
+	%write(X1),write(" X2= "),write(X2).
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		CONSTANTS
+	min = -1e+308
+	max = 1e+308
+	
+DOMAINS
+	ROx1, ROy1, ROx2, ROy2, ROx3, ROy3, ROx4, ROy4 = real
+
+PREDICATES
+	tasktext
+	intersection
+	solve(real, real, real, real, real, real, real, real)
+	determinant(real, real, real, real, real, real, real, real, real, real, real, real)
+	correctDeterm(real, real, real, real, real, real, real, real, real, real)
+	comparison(real, real, real)
+	checkreal(real)
+	checkrange(real)
+	
+CLAUSES
+	tasktext:-write("Enter the coordinates of the vertices of the triangle and rectangle to find the intersection."),nl,nl.
+	intersection:-
+	write("Enter ROx1: "),
+	checkreal(ROx1),checkrange(ROx1),
+	write("Enter ROy1: "),
+	checkreal(ROy1),checkrange(ROy1),
+	write("Enter ROx2: "),
+	checkreal(ROx2),checkrange(ROx2),
+	write("Enter ROy2: "),
+	checkreal(ROy2),checkrange(ROy2),
+	write("Enter ROx3: "),
+	checkreal(ROx3),checkrange(ROx3),
+	write("Enter ROy3: "),
+	checkreal(ROy3),checkrange(ROy3),
+	write("Enter ROx4: "),
+	checkreal(ROx4),checkrange(ROx4),
+	write("Enter ROy4: "),
+	checkreal(ROy4),checkrange(ROy4),
+	solve(ROx1, ROy1, ROx2, ROy2, ROx3, ROy3, ROx4, ROy4).
+	
+	checkreal(Variable):-readreal(Variable),!;
+	write("Input ErRor! Please, enter number: "),checkreal(Variable).
+	checkrange(Variable):-Variable>min,Variable<max,!;
+	write("Range ErRor! The number is not included in the range of valid values."),nl,write("Try again."),nl,Variable=0.
+
+	% предикат для поиска пересечений отрезков фигур
+	solve(ROx1, ROy1, ROx2, ROy2, ROx3, ROy3, ROx4, ROy4):-
+	RL1_k = (ROy2-ROy1)/(ROx2-ROx1), RL1_b = (((ROx2-ROx1)*(ROy1))-((ROy2-ROy1)*(ROx1)))/(ROx2-ROx1),
+	RL3_k = (ROy4-ROy3)/(ROx4-ROx3), RL3_b = (((ROx4-ROx3)*(ROy3))-((ROy4-ROy3)*(ROx3)))/(ROx4-ROx3),
+	determinant(RL1_k, RL1_b, RL3_k, RL3_b, ROx1, ROy1, ROx2, ROy2, ROx3, ROy3, ROx4, ROy4).
+	
+	determinant(K1, B1, K2, B2, TX1, TY1, TX2, TY2, RX1, RY1, RX2, RY2):-
+	K = K1-K2, B = B1-B2, K <> 0, !, X = (-B)/K,
+	Y = K1*X+B1, correctDeterm(X, Y, TX1, TY1, TX2, TY2, RX1, RY1, RX2, RY2).
+	
+	correctDeterm(X, Y, TX1, TY1, TX2, TY2, RX1, RY1, RX2, RY2):-
+	comparison(X, TX1, TX2),comparison(Y, TY1, TY2),comparison(X, RX1, RX2),comparison(Y, RY1, RY2),!,
+	write("  ( "),write(X),write("; "),write(Y),write(" ) "),nl.
+	
+	comparison(X, X1, X2):-X1<=X, X<=X2,!;
+	X2<X, X<X1.
+	
+	
+GOAL
+	tasktext,
+	intersection
+	
+	
+	
+	
+	DOMAINS
+	cell = e; w; a % empty; wall; apple
+	row = cell*
+	matrix = row*
+	position = row_col(integer, integer)
+	path = matrix*
+	state_structure = status(path, integer) % путь и число яблок
+	
+PREDICATES
+	search
+	depth_search(matrix, state_structure, path)
+	step(matrix, state_structure, state_structure)
+	next_cell(position, position)
+	cell_pass(cell, integer, integer)
+	matrix_cell(position, matrix, integer)
+	member(integer, path)
+	nth0(cell, matrix, cell)
+	
+CLAUSES
+	search:-
+	Labyrinth = [
+	[a, e, w, e, a, e, a, e],
+	[e, a, w, a, e, a, e, a],
+	[a, e, a, e, a, e, a, e],
+	[e, a, e, w, e, a, e, a],
+	[a, e, a, w, a, e, a, e],
+	[e, a, e, a, e, a, e, a],
+	[a, e, a, e, w, e, a, e],
+	[e, a, e, a, w, a, e, a]],
+	
+/*  Лабиринт = [
+    [яблоко, пусто, стена, пусто, яблоко, пусто, яблоко, пусто],
+    [пусто, яблоко, стена, яблоко, пусто, яблоко, пусто, яблоко],
+    [яблоко, пусто, яблоко, пусто, яблоко, пусто, яблоко, пусто],
+    [пусто, яблоко, пусто, стена, пусто, яблоко, пусто, яблоко],
+    [яблоко, пусто, яблоко, стена, яблоко, пусто, яблоко, пусто],
+    [пусто, яблоко, пусто, яблоко, пусто, яблоко, пусто, яблоко],
+    [яблоко, пусто, яблоко, пусто, стена, пусто, яблоко, пусто],
+    [пусто, яблоко, пусто, яблоко, стена, яблоко, пусто, яблоко]],*/
+	
+	Initial_Path = [row_col(0, 7)|_],
+	Initial_status = status(Initial_Path, 29),
+    depth_search(Labyrinth, Initial_status, Path),
+	write(Path), nl.
+	
+	depth_search(Labyrinth, Current_status, Path):-
+    step(Labyrinth, Current_status, Final_status), 
+    Final_status = status(Path, 0),
+    Path = [row_col(0, 7)|_], !.
+	depth_search(Labyrinth, Current_status, Path):-
+    step(Labyrinth, Current_status, New_status), 
+    New_status = status([New_cell|Back_Path], _),
+    NOT(member(New_cell, Back_Path)),
+    depth_search(Labyrinth, New_status, Path).
+	
+	step(Labyrinth, status(Current_Path, Apples_now), status(New_Path, Apples_then)):-
+	Current_Path = [Current_position|_],
+	next_cell(Current_position, Next_cell_position),
+	matrix_cell(Next_cell_position, Labyrinth, Cell),
+	cell_pass(Cell, Apples_now, Apples_then),
+	New_Path = [Next_cell_position|Current_Path].
+	
+	member(X, [X|_]).
+	member(X, [_|T]) :-  member(X, T).
+
+	next_cell(row_col(Row, Col), row_col(New_Row, Col)):-
+	New_Row = Row + 1; New_Row = Row  - 1.
+	next_cell(row_col(Row, Col), row_col(Row, New_Col)):-
+	New_Col = Col + 1; New_Col = Col - 1.
+	
+	cell_pass(a, Apples_now, Apples_then):-
+	Apples_then = Apples_now - 1.
+	cell_pass(e, Apples_quantity, Apples_quantity).
+	
+	matrix_cell(row_col(Row, Col), Matrix, Variable):-
+    nth0(Row, Matrix, Row_Variable),
+    nth0(Col, Row_Variable, Variable).
+	
+	nth0(0, [Elem|_], Elem):-!.
+	nth0(Index, _, _):-
+	Index < 0, !, fail.
+	nth0(Index, [_|Tail], Elem):-
+	NextIndex = Index - 1,
+	nth0(NextIndex, Tail, Elem).
+
+
+GOAL
+	search
+	
+	
